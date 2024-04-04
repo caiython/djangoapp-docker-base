@@ -27,7 +27,7 @@ services:
     env_file:
       - ./dotenv_files/.env
     networks:
-    - app-network
+      - app-network
 
   redis:
     image: redis:7.0.15-alpine
