@@ -44,10 +44,6 @@ services:
       - ./djangoapp:/djangoapp
     env_file:
       - ./dotenv_files/.env
-    environment:
-      - DJANGO_SETTINGS_MODULE=project.settings
-      - BROKER_URL=amqp://guest:guest@celerybroker:5672/vhost
-      - CELERY_RESULT_BACKEND=redis://redis:6379/0
     depends_on:
       - redis
       - celerybroker
@@ -57,10 +53,8 @@ services:
   celerybroker:
     container_name: celerybroker
     image: rabbitmq:3.8.2
-    environment:
-      RABBITMQ_DEFAULT_VHOST: vhost
-      RABBITMQ_DEFAULT_USER: guest
-      RABBITMQ_DEFAULT_PASS: guest
+    env_file:
+      - ./dotenv_files/.env
     restart: unless-stopped
     ports:
       - 5672:5672
