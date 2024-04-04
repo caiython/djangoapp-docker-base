@@ -1,6 +1,7 @@
 version: '3.9'
 
 services:
+
   djangoapp:
     container_name: djangoapp
     build:
@@ -15,6 +16,9 @@ services:
       - ./dotenv_files/.env
     depends_on:
       - psql
+    networks:
+      - app-network
+
   psql:
     container_name: psql
     image: postgres:16.2-alpine3.19
@@ -22,3 +26,46 @@ services:
       - ./data/postgres/data:/var/lib/postgresql/data/
     env_file:
       - ./dotenv_files/.env
+    networks:
+    - app-network
+
+  redis:
+    image: redis:7.0.15-alpine
+    networks:
+      - app-network
+
+  celeryworker:
+    container_name: celeryworker
+    build:
+      context: .
+    command: celery -A project worker --loglevel=info
+    restart: unless-stopped
+    volumes:
+      - ./djangoapp:/djangoapp
+    env_file:
+      - ./dotenv_files/.env
+    environment:
+      - DJANGO_SETTINGS_MODULE=project.settings
+      - BROKER_URL=amqp://guest:guest@celerybroker:5672/vhost
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    depends_on:
+      - redis
+      - celerybroker
+    networks:
+      - app-network
+
+  celerybroker:
+    container_name: celerybroker
+    image: rabbitmq:3.8.2
+    environment:
+      RABBITMQ_DEFAULT_VHOST: vhost
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    restart: unless-stopped
+    ports:
+      - 5672:5672
+    networks:
+      - app-network
+
+networks:
+  app-network:
