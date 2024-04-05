@@ -141,4 +141,4 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 CELERY_TIMEZONE = "America/Sao_Paulo"
 CELERY_TASK_TRACK_STARTED = True
 CELERY_TASK_TIME_LIMIT = 30 * 60
-BROKER_URL = 'amqp://guest:guest@celerybroker:5672/vhost'
+BROKER_URL = os.getenv('BROKER_URL')
